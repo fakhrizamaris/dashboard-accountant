@@ -1,0 +1,221 @@
+{% extends 'finance/base.html' %} {% load humanize %} {% block content %}
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="fw-bold">Laporan Keuangan</h2>
+      <p class="text-muted">Laporan generated otomatis dan presisi.</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="pills-lr-tab" data-bs-toggle="pill" data-bs-target="#pills-lr" type="button" role="tab">Laba Rugi</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="pills-neraca-tab" data-bs-toggle="pill" data-bs-target="#pills-neraca" type="button" role="tab">Neraca</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="pills-ns-tab" data-bs-toggle="pill" data-bs-target="#pills-ns" type="button" role="tab">Neraca Saldo</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="pills-ak-tab" data-bs-toggle="pill" data-bs-target="#pills-ak" type="button" role="tab">Arus Kas</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="pills-tabContent">
+    <!-- Laba Rugi -->
+    <div class="tab-pane fade show active" id="pills-lr" role="tabpanel">
+      <div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto">
+        <div class="card-header bg-primary text-white text-center py-3">
+          <h4 class="mb-0 fw-bold">LAPORAN LABA RUGI</h4>
+          <small>Periode Berjalan</small>
+        </div>
+        <div class="card-body p-5">
+          <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">PENDAPATAN</h5>
+          {% for p in pendapatan %}
+          <div class="d-flex justify-content-between mb-2">
+            <span>{{ p.nama }}</span>
+            <span>Rp {{ p.nominal|intcomma }}</span>
+          </div>
+          {% endfor %}
+          <div class="d-flex justify-content-between fw-bold bg-light p-2 mt-2">
+            <span>Total Pendapatan</span>
+            <span>Rp {{ total_pendapatan|intcomma }}</span>
+          </div>
+
+          <h5 class="fw-bold text-danger mt-4 mb-3 border-bottom pb-2">BEBAN OPERASIONAL</h5>
+          {% for b in beban %}
+          <div class="d-flex justify-content-between mb-2">
+            <span>{{ b.nama }}</span>
+            <span>(Rp {{ b.nominal|intcomma }})</span>
+          </div>
+          {% endfor %}
+          <div class="d-flex justify-content-between fw-bold bg-light p-2 mt-2">
+            <span>Total Beban</span>
+            <span>(Rp {{ total_beban|intcomma }})</span>
+          </div>
+
+          <div class="d-flex justify-content-between fw-bold text-white p-3 mt-4 rounded {% if laba_rugi >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+            <span class="fs-5">LABA/RUGI BERSIH</span>
+            <span class="fs-5">Rp {{ laba_rugi|intcomma }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Neraca -->
+    <div class="tab-pane fade" id="pills-neraca" role="tabpanel">
+      <div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto">
+        <div class="card-header bg-dark text-white text-center py-3">
+          <h4 class="mb-0 fw-bold">LAPORAN POSISI KEUANGAN (NERACA)</h4>
+          <small>Per Tanggal Hari Ini</small>
+        </div>
+        <div class="card-body p-5">
+          <div class="row">
+            <!-- Left Side: Assets -->
+            <div class="col-md-6 border-end">
+              <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">ASET (HARTA)</h5>
+              {% for a in aset %}
+              <div class="d-flex justify-content-between mb-2">
+                <span>{{ a.nama }}</span>
+                <span>Rp {{ a.nominal|intcomma }}</span>
+              </div>
+              {% endfor %}
+              <div class="mt-auto pt-3 border-top border-2 border-primary">
+                <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
+                  <span>TOTAL ASET</span>
+                  <span>Rp {{ total_aset|intcomma }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Liabilities + Equity -->
+            <div class="col-md-6">
+              <h5 class="fw-bold text-danger mb-3 border-bottom pb-2">KEWAJIBAN (UTANG)</h5>
+              {% for k in kewajiban %}
+              <div class="d-flex justify-content-between mb-2">
+                <span>{{ k.nama }}</span>
+                <span>Rp {{ k.nominal|intcomma }}</span>
+              </div>
+              {% endfor %}
+              <div class="d-flex justify-content-between fw-bold bg-light p-1 mb-4">
+                <span>Total Kewajiban</span>
+                <span>Rp {{ total_kewajiban|intcomma }}</span>
+              </div>
+
+              <h5 class="fw-bold text-success mb-3 border-bottom pb-2">EKUITAS (MODAL)</h5>
+              {% for m in modal %}
+              <div class="d-flex justify-content-between mb-2">
+                <span>{{ m.nama }}</span>
+                <span>Rp {{ m.nominal|intcomma }}</span>
+              </div>
+              {% endfor %}
+              <div class="d-flex justify-content-between mb-2 text-success">
+                <span>Laba/Rugi Berjalan</span>
+                <span>Rp {{ laba_rugi|intcomma }}</span>
+              </div>
+
+              <div class="mt-auto pt-3 border-top border-2 border-success">
+                <div class="d-flex justify-content-between fw-bold fs-6">
+                  <span>TOTAL KEWAJIBAN & EKUITAS</span>
+                  <span>Rp {{ total_kewajiban|add:total_ekuitas|intcomma }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if balance_check != 0 %}
+          <div class="alert alert-danger mt-4 text-center"><strong>PERINGATAN:</strong> Neraca tidak seimbang selisih Rp {{ balance_check|intcomma }}. Cek input jurnal anda.</div>
+          {% else %}
+          <div class="alert alert-success mt-4 text-center py-2"><i class="bi bi-check-circle-fill"></i> Neraca Seimbang (Balance)</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Neraca Saldo -->
+    <div class="tab-pane fade" id="pills-ns" role="tabpanel">
+      <div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto">
+        <div class="card-header bg-secondary text-white text-center py-3">
+          <h4 class="mb-0 fw-bold">NERACA SALDO</h4>
+          <small>Daftar Saldo Akun</small>
+        </div>
+        <div class="card-body p-4">
+          <table class="table table-bordered table-striped">
+            <thead class="table-dark text-center">
+              <tr>
+                <th>Kode</th>
+                <th>Nama Akun</th>
+                <th>Debit</th>
+                <th>Kredit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in neraca_saldo %}
+              <tr>
+                <td class="text-center">{{ item.kode }}</td>
+                <td>{{ item.nama }}</td>
+                <td class="text-end">{% if item.debit > 0 %}Rp {{ item.debit|intcomma }}{% endif %}</td>
+                <td class="text-end">{% if item.kredit > 0 %}Rp {{ item.kredit|intcomma }}{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot class="table-group-divider fw-bold">
+              <tr>
+                <td colspan="2" class="text-end">TOTAL</td>
+                <td class="text-end">Rp {{ total_ns_debit|intcomma }}</td>
+                <td class="text-end">Rp {{ total_ns_kredit|intcomma }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arus Kas -->
+    <div class="tab-pane fade" id="pills-ak" role="tabpanel">
+      <div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto">
+        <div class="card-header bg-success text-white text-center py-3">
+          <h4 class="mb-0 fw-bold">LAPORAN ARUS KAS</h4>
+          <small>Metode Langsung</small>
+        </div>
+        <div class="card-body p-5">
+          <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">ARUS KAS MASUK</h5>
+          {% for item in arus_kas_masuk %}
+          <div class="d-flex justify-content-between mb-2">
+            <span><small class="text-muted">{{ item.tanggal|date:"d/m" }}</small> {{ item.keterangan }}</span>
+            <span>Rp {{ item.nominal|intcomma }}</span>
+          </div>
+          {% empty %}
+          <p class="text-muted fst-italic">Tidak ada transaksi masuk.</p>
+          {% endfor %}
+          <div class="d-flex justify-content-between fw-bold bg-light p-2 mt-2">
+            <span>Total Masuk</span>
+            <span>Rp {{ total_ak_masuk|intcomma }}</span>
+          </div>
+
+          <h5 class="fw-bold text-danger mt-4 mb-3 border-bottom pb-2">ARUS KAS KELUAR</h5>
+          {% for item in arus_kas_keluar %}
+          <div class="d-flex justify-content-between mb-2">
+            <span><small class="text-muted">{{ item.tanggal|date:"d/m" }}</small> {{ item.keterangan }}</span>
+            <span>(Rp {{ item.nominal|intcomma }})</span>
+          </div>
+          {% empty %}
+          <p class="text-muted fst-italic">Tidak ada transaksi keluar.</p>
+          {% endfor %}
+          <div class="d-flex justify-content-between fw-bold bg-light p-2 mt-2">
+            <span>Total Keluar</span>
+            <span>(Rp {{ total_ak_keluar|intcomma }})</span>
+          </div>
+
+          <div class="d-flex justify-content-between fw-bold text-white p-3 mt-4 rounded {% if net_cash_flow >= 0 %}bg-success{% else %}bg-warning{% endif %}">
+            <span class="fs-5">KENAIKAN/(PENURUNAN) KAS BERSIH</span>
+            <span class="fs-5">Rp {{ net_cash_flow|intcomma }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

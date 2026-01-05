@@ -1,0 +1,72 @@
+{% extends 'finance/base.html' %} {% load humanize %} {% load crispy_forms_tags %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold">Jurnal Umum</h2>
+      <p class="text-muted">Catat transaksi keuangan anda disini.</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addJurnalModal"><i class="bi bi-plus-lg"></i> Tambah Jurnal</button>
+  </div>
+
+  <div class="card border-0">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle table-custom">
+          <thead class="bg-light">
+            <tr>
+              <th>Tanggal</th>
+              <th>Uraian</th>
+              <th>Akun Debit</th>
+              <th>Akun Kredit</th>
+              <th class="text-end">Nominal</th>
+              <th class="text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for jurnal in jurnals %}
+            <tr>
+              <td>{{ jurnal.tanggal|date:"d/m/Y" }}</td>
+              <td>{{ jurnal.uraian }}</td>
+              <td>{{ jurnal.akun_debit.kode }} - {{ jurnal.akun_debit.nama }}</td>
+              <td>{{ jurnal.akun_kredit.kode }} - {{ jurnal.akun_kredit.nama }}</td>
+              <td class="text-end">Rp {{ jurnal.nominal|intcomma }}</td>
+              <td class="text-center">
+                <a href="{% url 'jurnal_delete' jurnal.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin hapus?');">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" height="150" alt="Empty" style="opacity: 0.5" />
+                <p class="text-muted mt-3">Belum ada data jurnal.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addJurnalModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Tambah Transaksi Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">{% csrf_token %} {{ form|crispy }}</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
