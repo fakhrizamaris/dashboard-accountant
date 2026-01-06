@@ -78,6 +78,18 @@ def jurnal_delete(request, pk):
     messages.success(request, "Data jurnal dihapus.")
     return redirect('jurnal_list')
 
+def jurnal_edit(request, pk):
+    jurnal = get_object_or_404(Jurnal, pk=pk)
+    if request.method == 'POST':
+        form = JurnalForm(request.POST, instance=jurnal)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Jurnal berhasil diperbarui!")
+            return redirect('jurnal_list')
+    else:
+        form = JurnalForm(instance=jurnal)
+    return render(request, 'finance/jurnal_edit.html', {'form': form, 'jurnal': jurnal})
+
 def buku_besar(request):
     akun_id = request.GET.get('akun')
     selected_akun = None

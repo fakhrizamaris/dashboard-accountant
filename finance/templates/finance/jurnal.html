@@ -3,43 +3,69 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h2 class="fw-bold">Jurnal Umum</h2>
-      <p class="text-muted">Catat transaksi keuangan disini.</p>
+      <p class="text-muted">Catat transaksi keuangan anda disini.</p>
     </div>
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addJurnalModal"><i class="bi bi-plus-lg"></i> Tambah Jurnal</button>
   </div>
 
   <div class="card border-0">
     <div class="card-body">
+      <!-- Search & Filter Bar -->
+      <div class="row mb-3 g-2">
+        <div class="col-md-4">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Cari uraian, akun..." onkeyup="filterTable()" />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select id="sortSelect" class="form-select" onchange="sortTable()">
+            <option value="date-desc">Tanggal (Terbaru)</option>
+            <option value="date-asc">Tanggal (Terlama)</option>
+            <option value="nominal-desc">Nominal (Terbesar)</option>
+            <option value="nominal-asc">Nominal (Terkecil)</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <span class="badge bg-primary fs-6 py-2 px-3"> Total: <span id="totalCount">{{ jurnals|length }}</span> transaksi </span>
+        </div>
+      </div>
+
       <div class="table-responsive">
-        <table class="table table-hover align-middle table-custom">
-          <thead class="bg-light">
+        <table class="table align-middle" id="jurnalTable">
+          <thead class="table-dark">
             <tr>
-              <th>Tanggal</th>
-              <th>Uraian</th>
+              <th style="width: 100px" class="sortable" data-sort="date">Tanggal <i class="bi bi-arrow-down-up"></i></th>
+              <th class="sortable" data-sort="uraian">Uraian</th>
               <th>Akun Debit</th>
               <th>Akun Kredit</th>
-              <th class="text-end">Nominal</th>
-              <th class="text-center">Aksi</th>
+              <th class="text-end sortable" data-sort="nominal">Nominal <i class="bi bi-arrow-down-up"></i></th>
+              <th class="text-center" style="width: 120px">Aksi</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="jurnalBody">
             {% for jurnal in jurnals %}
-            <tr>
+            <tr data-date="{{ jurnal.tanggal|date:'Y-m-d' }}" data-nominal="{{ jurnal.nominal }}">
               <td>{{ jurnal.tanggal|date:"d/m/Y" }}</td>
               <td>{{ jurnal.uraian }}</td>
-              <td>{{ jurnal.akun_debit.kode }} - {{ jurnal.akun_debit.nama }}</td>
-              <td>{{ jurnal.akun_kredit.kode }} - {{ jurnal.akun_kredit.nama }}</td>
-              <td class="text-end">Rp {{ jurnal.nominal|intcomma }}</td>
+              <td><span class="badge bg-success bg-opacity-10 text-success">{{ jurnal.akun_debit.kode }} - {{ jurnal.akun_debit.nama }}</span></td>
+              <td><span class="badge bg-danger bg-opacity-10 text-danger">{{ jurnal.akun_kredit.kode }} - {{ jurnal.akun_kredit.nama }}</span></td>
+              <td class="text-end fw-bold">Rp {{ jurnal.nominal|intcomma }}</td>
               <td class="text-center">
-                <a href="{% url 'jurnal_delete' jurnal.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin hapus?');">
-                  <i class="bi bi-trash"></i>
-                </a>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'jurnal_edit' jurnal.pk %}" class="btn btn-outline-primary" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'jurnal_delete' jurnal.pk %}" class="btn btn-outline-danger" onclick="return confirm('Yakin hapus data ini?');" title="Hapus">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
               </td>
             </tr>
             {% empty %}
-            <tr>
+            <tr id="emptyRow">
               <td colspan="6" class="text-center py-5">
-                <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" height="150" alt="Empty" style="opacity: 0.5" />
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem"></i>
                 <p class="text-muted mt-3">Belum ada data jurnal.</p>
               </td>
             </tr>
@@ -51,22 +77,75 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal Tambah -->
 <div class="modal fade" id="addJurnalModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">Tambah Transaksi Baru</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Tambah Transaksi Baru</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post">
         <div class="modal-body">{% csrf_token %} {{ form|crispy }}</div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Simpan Transaksi</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  // Fungsi Cari/Filter
+  function filterTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#jurnalBody tr:not(#emptyRow)');
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+      const text = row.textContent.toLowerCase();
+      if (text.includes(input)) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    document.getElementById('totalCount').textContent = visibleCount;
+  }
+
+  // Fungsi Sorting
+  function sortTable() {
+    const sortValue = document.getElementById('sortSelect').value;
+    const tbody = document.getElementById('jurnalBody');
+    const rows = Array.from(tbody.querySelectorAll('tr:not(#emptyRow)'));
+
+    rows.sort((a, b) => {
+      if (sortValue === 'date-desc') {
+        return new Date(b.dataset.date) - new Date(a.dataset.date);
+      } else if (sortValue === 'date-asc') {
+        return new Date(a.dataset.date) - new Date(b.dataset.date);
+      } else if (sortValue === 'nominal-desc') {
+        return parseInt(b.dataset.nominal) - parseInt(a.dataset.nominal);
+      } else if (sortValue === 'nominal-asc') {
+        return parseInt(a.dataset.nominal) - parseInt(b.dataset.nominal);
+      }
+      return 0;
+    });
+
+    rows.forEach((row) => tbody.appendChild(row));
+  }
+
+  // Sort default saat load
+  document.addEventListener('DOMContentLoaded', sortTable);
+</script>
+
+<style>
+  .sortable {
+    cursor: pointer;
+  }
+
+</style>
 {% endblock %}
