@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, Q, F, Value, DecimalField
 from django.db.models.functions import Coalesce
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .models import Akun, Jurnal
 from .forms import JurnalForm
@@ -30,6 +31,7 @@ def get_saldo_akun(akun, start_date=None, end_date=None):
     else:
         return credit - debit
 
+@login_required
 def dashboard(request):
     # Summary Cards
     total_aset = 0
@@ -58,6 +60,7 @@ def dashboard(request):
     }
     return render(request, 'finance/dashboard.html', context)
 
+@login_required
 def jurnal_list(request):
     jurnals = Jurnal.objects.all().order_by('-tanggal', '-created_at')
     
@@ -72,12 +75,14 @@ def jurnal_list(request):
         
     return render(request, 'finance/jurnal.html', {'jurnals': jurnals, 'form': form})
 
+@login_required
 def jurnal_delete(request, pk):
     jurnal = get_object_or_404(Jurnal, pk=pk)
     jurnal.delete()
     messages.success(request, "Data jurnal dihapus.")
     return redirect('jurnal_list')
 
+@login_required
 def jurnal_edit(request, pk):
     jurnal = get_object_or_404(Jurnal, pk=pk)
     if request.method == 'POST':
@@ -90,6 +95,7 @@ def jurnal_edit(request, pk):
         form = JurnalForm(instance=jurnal)
     return render(request, 'finance/jurnal_edit.html', {'form': form, 'jurnal': jurnal})
 
+@login_required
 def buku_besar(request):
     akun_id = request.GET.get('akun')
     selected_akun = None
@@ -149,6 +155,7 @@ def buku_besar(request):
     }
     return render(request, 'finance/buku_besar.html', context)
 
+@login_required
 def laporan_keuangan(request):
     # Laba Rugi
     pendapatan = []
@@ -288,10 +295,12 @@ def laporan_keuangan(request):
 # --- Akun (Master Data) Views ---
 from .forms import AkunForm
 
+@login_required
 def akun_list(request):
     akuns = Akun.objects.all().order_by('kode')
     return render(request, 'finance/akun_list.html', {'akuns': akuns})
 
+@login_required
 def akun_create(request):
     if request.method == 'POST':
         form = AkunForm(request.POST)
@@ -303,6 +312,7 @@ def akun_create(request):
         form = AkunForm()
     return render(request, 'finance/akun_form.html', {'form': form, 'title': 'Tambah Akun Baru'})
 
+@login_required
 def akun_update(request, pk):
     akun = get_object_or_404(Akun, pk=pk)
     if request.method == 'POST':
@@ -315,6 +325,7 @@ def akun_update(request, pk):
         form = AkunForm(instance=akun)
     return render(request, 'finance/akun_form.html', {'form': form, 'title': f'Edit Akun: {akun.nama}'})
 
+@login_required
 def akun_delete(request, pk):
     akun = get_object_or_404(Akun, pk=pk)
     try:

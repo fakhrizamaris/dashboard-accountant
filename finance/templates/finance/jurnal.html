@@ -116,36 +116,120 @@
     document.getElementById('totalCount').textContent = visibleCount;
   }
 
-  // Fungsi Sorting
+  // Variabel untuk track sorting state
+  let currentSort = { column: 'date', direction: 'desc' };
+
+  // Fungsi Sorting dari Dropdown
   function sortTable() {
     const sortValue = document.getElementById('sortSelect').value;
+    const [column, direction] = sortValue.split('-');
+    currentSort = { column, direction };
+    doSort();
+  }
+
+  // Fungsi Sorting dari Klik Header
+  function sortByColumn(column) {
+    // Toggle direction jika kolom sama
+    if (currentSort.column === column) {
+      currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSort.column = column;
+      currentSort.direction = 'desc'; // Default desc untuk kolom baru
+    }
+
+    // Update dropdown
+    const selectValue = `${column}-${currentSort.direction}`;
+    const selectEl = document.getElementById('sortSelect');
+    if (selectEl.querySelector(`option[value="${selectValue}"]`)) {
+      selectEl.value = selectValue;
+    }
+
+    doSort();
+    updateSortIndicators();
+  }
+
+  // Eksekusi sorting
+  function doSort() {
     const tbody = document.getElementById('jurnalBody');
     const rows = Array.from(tbody.querySelectorAll('tr:not(#emptyRow)'));
 
     rows.sort((a, b) => {
-      if (sortValue === 'date-desc') {
-        return new Date(b.dataset.date) - new Date(a.dataset.date);
-      } else if (sortValue === 'date-asc') {
-        return new Date(a.dataset.date) - new Date(b.dataset.date);
-      } else if (sortValue === 'nominal-desc') {
-        return parseInt(b.dataset.nominal) - parseInt(a.dataset.nominal);
-      } else if (sortValue === 'nominal-asc') {
-        return parseInt(a.dataset.nominal) - parseInt(b.dataset.nominal);
+      let valA, valB;
+
+      if (currentSort.column === 'date') {
+        valA = new Date(a.dataset.date);
+        valB = new Date(b.dataset.date);
+      } else if (currentSort.column === 'nominal') {
+        valA = parseInt(a.dataset.nominal) || 0;
+        valB = parseInt(b.dataset.nominal) || 0;
+      } else {
+        return 0;
       }
-      return 0;
+
+      if (currentSort.direction === 'asc') {
+        return valA - valB;
+      } else {
+        return valB - valA;
+      }
     });
 
     rows.forEach((row) => tbody.appendChild(row));
   }
 
-  // Sort default saat load
-  document.addEventListener('DOMContentLoaded', sortTable);
+  // Update icon panah di header
+  function updateSortIndicators() {
+    document.querySelectorAll('.sortable').forEach((th) => {
+      const icon = th.querySelector('i');
+      const column = th.dataset.sort;
+
+      if (column === currentSort.column) {
+        if (currentSort.direction === 'asc') {
+          icon.className = 'bi bi-arrow-up';
+        } else {
+          icon.className = 'bi bi-arrow-down';
+        }
+        th.classList.add('sorting-active');
+      } else {
+        icon.className = 'bi bi-arrow-down-up';
+        th.classList.remove('sorting-active');
+      }
+    });
+  }
+
+  // Event listener untuk klik header
+  document.addEventListener('DOMContentLoaded', function () {
+    // Pasang event listener ke header sortable
+    document.querySelectorAll('.sortable').forEach((th) => {
+      th.addEventListener('click', function () {
+        const column = this.dataset.sort;
+        if (column) {
+          sortByColumn(column);
+        }
+      });
+    });
+
+    // Sort default
+    sortTable();
+    updateSortIndicators();
+  });
 </script>
 
 <style>
   .sortable {
     cursor: pointer;
+    user-select: none;
   }
-
+  .sortable i {
+    margin-left: 5px;
+    font-size: 0.8rem;
+  }
+  /* Hover effect pada baris tabel */
+  #jurnalTable tbody tr:hover {
+    background-color: #e8f4fc;
+    cursor: pointer;
+  }
+  #jurnalTable tbody tr:hover td {
+    color: #0d6efd;
+  }
 </style>
 {% endblock %}

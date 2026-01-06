@@ -57,16 +57,29 @@ class Command(BaseCommand):
                     continue
 
                 try:
-                    # Format Tanggal: 01/09/22 atau DD/MM/YY
+                    # Format Tanggal: bisa DD/MM/YY, M/DD/YYYY, atau YYYY-MM-DD
                     tgl_str = row[1].strip()
-                    try:
-                        tgl_obj = datetime.strptime(tgl_str, '%d/%m/%y').date()
-                    except:
+                    tgl_obj = None
+                    
+                    # Coba berbagai format tanggal
+                    date_formats = [
+                        '%d/%m/%y',      # 01/09/22
+                        '%d/%m/%Y',      # 01/09/2022
+                        '%m/%d/%Y',      # 9/23/2022 (format US)
+                        '%m/%d/%y',      # 9/23/22
+                        '%Y-%m-%d',      # 2022-09-01
+                    ]
+                    
+                    for fmt in date_formats:
                         try:
-                            tgl_obj = datetime.strptime(tgl_str, '%Y-%m-%d').date()
+                            tgl_obj = datetime.strptime(tgl_str, fmt).date()
+                            break
                         except:
-                            count_skip += 1
                             continue
+                    
+                    if tgl_obj is None:
+                        count_skip += 1
+                        continue
                     
                     # Bersihkan Nominal: " Rp11,738,000 " -> 11738000
                     nominal_str = row[3].strip()

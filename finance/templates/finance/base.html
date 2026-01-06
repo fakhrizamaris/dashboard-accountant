@@ -120,6 +120,18 @@
         <hr class="text-secondary mx-3 my-2" />
 
         <a class="nav-link {% if 'akun' in request.path %}active{% endif %}" href="{% url 'akun_list' %}"> <i class="bi bi-gear-wide-connected"></i> Daftar Akun (CoA) </a>
+
+        <!-- User Info & Logout -->
+        <div class="mt-auto px-3 py-3 border-top">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-person-circle me-2 fs-4"></i>
+            <div>
+              <small class="d-block fw-bold">{{ user.username }}</small>
+              <small class="text-muted">{{ user.email|default:"Admin" }}</small>
+            </div>
+          </div>
+          <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm w-100"> <i class="bi bi-box-arrow-right me-1"></i> Logout </a>
+        </div>
       </nav>
     </div>
 
