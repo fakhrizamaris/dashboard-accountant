@@ -4,6 +4,7 @@ from django.db.models.functions import Coalesce
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from decimal import Decimal
 from .models import Akun, Jurnal
 from .forms import JurnalForm
 
@@ -46,7 +47,9 @@ def dashboard(request):
     for akun in Akun.objects.filter(kategori='EXPENSE'):
         total_beban += get_saldo_akun(akun)
         
-    laba_bersih = total_pendapatan - total_beban
+    # Perhitungan Pajak 2% (sinkron dengan laporan)
+    pajak_2_persen = int(total_pendapatan * Decimal('0.02'))
+    laba_bersih = total_pendapatan - pajak_2_persen - total_beban
     
     # Recent Jurnal
     recent_jurnal = Jurnal.objects.all().order_by('-tanggal', '-created_at')[:5]
@@ -177,7 +180,7 @@ def laporan_keuangan(request):
     laba_rugi_sebelum_pajak = total_pendapatan - total_beban
     
     # Perhitungan Pajak 2% (sesuai format BMM)
-    pajak_2_persen = int(total_pendapatan * 0.02)  # Pajak 2% dari penghasilan
+    pajak_2_persen = int(total_pendapatan * Decimal('0.02'))  # Pajak 2% dari penghasilan
     laba_kotor = total_pendapatan - pajak_2_persen  # Laba Kotor setelah pajak penghasilan
     biaya_pajak = 0  # Biaya pajak lainnya (bisa diisi jika ada)
     
