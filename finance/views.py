@@ -155,7 +155,15 @@ def laporan_keuangan(request):
             beban.append({'nama': a.nama, 'nominal': s})
             total_beban += s
             
-    laba_rugi = total_pendapatan - total_beban
+    laba_rugi_sebelum_pajak = total_pendapatan - total_beban
+    
+    # Perhitungan Pajak 2% (sesuai format BMM)
+    pajak_2_persen = int(total_pendapatan * 0.02)  # Pajak 2% dari penghasilan
+    laba_kotor = total_pendapatan - pajak_2_persen  # Laba Kotor setelah pajak penghasilan
+    biaya_pajak = 0  # Biaya pajak lainnya (bisa diisi jika ada)
+    
+    # Laba Bersih = Laba Kotor - Total Beban - Biaya Pajak
+    laba_rugi = laba_kotor - total_beban - biaya_pajak
     
     # Neraca (Balance Sheet)
     aset = []
@@ -252,7 +260,8 @@ def laporan_keuangan(request):
     context = {
         'pendapatan': pendapatan, 'total_pendapatan': total_pendapatan,
         'beban': beban, 'total_beban': total_beban,
-        'laba_rugi': laba_rugi,
+        'pajak_2_persen': pajak_2_persen, 'laba_kotor': laba_kotor,
+        'biaya_pajak': biaya_pajak, 'laba_rugi': laba_rugi,
         'aset': aset, 'total_aset': total_aset,
         'kewajiban': kewajiban, 'total_kewajiban': total_kewajiban,
         'modal': modal_items, 'total_modal': total_modal_awal, 'total_ekuitas': total_ekuitas,
