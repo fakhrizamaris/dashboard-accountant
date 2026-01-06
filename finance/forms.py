@@ -8,6 +8,13 @@ class JurnalForm(forms.ModelForm):
         widgets = {
             'tanggal': forms.DateInput(attrs={'type': 'date'}),
         }
+        labels = {
+            'tanggal': 'Tanggal Transaksi',
+            'uraian': 'Keterangan / Uraian',
+            'akun_debit': 'Akun Debit',
+            'akun_kredit': 'Akun Kredit',
+            'nominal': 'Jumlah (Nominal)'
+        }
 
 class AkunForm(forms.ModelForm):
     class Meta:
